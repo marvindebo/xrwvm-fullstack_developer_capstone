@@ -1,0 +1,2 @@
+Command: curl -sS -c /tmp/capstone_cookies.txt -H "Content-Type: application/json" -d '{"userName":"marvindebo","password":"<REDACTED>"}' http://127.0.0.1:8000/djangoapp/login
+Output: {"userName": "marvindebo", "status": "Authenticated"}

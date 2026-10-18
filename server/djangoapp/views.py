@@ -9,7 +9,7 @@
 # from datetime import datetime
 
 from django.http import JsonResponse
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, authenticate, logout
 import logging
 import json
 from django.views.decorators.csrf import csrf_exempt
@@ -39,8 +39,11 @@ def login_user(request):
     return JsonResponse(data)
 
 # Create a `logout_request` view to handle sign out request
-# def logout_request(request):
-# ...
+@csrf_exempt
+def logout_request(request):
+    username = request.user.username if request.user.is_authenticated else ""
+    logout(request)
+    return JsonResponse({"userName": username, "status": "Logged out"})
 
 # Create a `registration` view to handle sign up request
 # @csrf_exempt
@@ -63,3 +66,40 @@ def login_user(request):
 # Create a `add_review` view to submit a review
 # def add_review(request):
 # ...
+
+@csrf_exempt
+def registration(request):
+    if request.method != "POST":
+        return JsonResponse({"message": "POST required"}, status=405)
+
+    from django.contrib.auth.models import User
+
+    try:
+        data = json.loads(request.body)
+        username = data.get("userName", "").strip()
+        password = data.get("password", "")
+
+        if not username or not password:
+            return JsonResponse(
+                {"message": "Username and password required"},
+                status=400
+            )
+
+        if User.objects.filter(username=username).exists():
+            return JsonResponse(
+                {"message": "Username already exists"},
+                status=400
+            )
+
+        User.objects.create_user(
+            username=username,
+            password=password,
+            first_name=data.get("firstName", ""),
+            last_name=data.get("lastName", ""),
+            email=data.get("email", "")
+        )
+
+        return JsonResponse({"userName": username, "status": "Registered"})
+
+    except (ValueError, TypeError):
+        return JsonResponse({"message": "Invalid request"}, status=400)
