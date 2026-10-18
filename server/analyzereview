@@ -1,0 +1,3 @@
+Command: curl -fsS -m 15 http://127.0.0.1:5050/analyze/Fantastic%20services
+Output:
+{"sentiment": "positive"}
