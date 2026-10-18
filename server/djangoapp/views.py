@@ -154,3 +154,28 @@ def get_dealer_reviews(request, dealer_id):
         return JsonResponse({"status": 503, "reviews": []}, status=503)
 
     return JsonResponse({"status": 200, "reviews": reviews})
+
+def get_all_car_makes(request):
+    from .models import CarMake
+
+    makes = CarMake.objects.prefetch_related("models").all()
+
+    result = [
+        {
+            "id": make.id,
+            "name": make.name,
+            "description": make.description,
+            "models": [
+                {
+                    "id": model.id,
+                    "name": model.name,
+                    "type": model.type,
+                    "year": model.year
+                }
+                for model in make.models.all()
+            ]
+        }
+        for make in makes
+    ]
+
+    return JsonResponse(result, safe=False)
