@@ -103,3 +103,54 @@ def registration(request):
 
     except (ValueError, TypeError):
         return JsonResponse({"message": "Invalid request"}, status=400)
+
+# Dealership API endpoints
+from urllib.request import urlopen
+from urllib.error import URLError
+
+def dealership_api_request(endpoint):
+    from .restapis import backend_url
+    try:
+        with urlopen(
+            backend_url.rstrip("/") + endpoint,
+            timeout=10
+        ) as response:
+            return json.load(response)
+    except (URLError, ValueError, TimeoutError) as error:
+        logger.error("Dealership API error: %s", error)
+        return None
+
+
+def get_dealerships(request, state=None):
+    endpoint = "/fetchDealers"
+    if state and state.lower() != "all":
+        from urllib.parse import quote
+        endpoint += "/" + quote(state)
+
+    dealers = dealership_api_request(endpoint)
+    if dealers is None:
+        return JsonResponse(
+            {"status": 503, "dealers": [], "message": "API unavailable"},
+            status=503
+        )
+
+    return JsonResponse({"status": 200, "dealers": dealers})
+
+
+def get_dealer_details(request, dealer_id):
+    dealer = dealership_api_request(f"/fetchDealer/{dealer_id}")
+    if dealer is None:
+        return JsonResponse({"status": 503, "dealer": []}, status=503)
+
+    return JsonResponse({
+        "status": 200,
+        "dealer": [dealer] if dealer else []
+    })
+
+
+def get_dealer_reviews(request, dealer_id):
+    reviews = dealership_api_request(f"/fetchReviews/dealer/{dealer_id}")
+    if reviews is None:
+        return JsonResponse({"status": 503, "reviews": []}, status=503)
+
+    return JsonResponse({"status": 200, "reviews": reviews})

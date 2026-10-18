@@ -61,7 +61,7 @@ ROOT_URLCONF = 'djangoproj.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'frontend' / 'static'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -136,3 +136,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 STATICFILES_DIRS = []
 
+
+# Trust the HTTPS application preview provided by IBM Skills Network.
+CSRF_TRUSTED_ORIGINS = [
+    "https://*.proxy.cognitiveclass.ai",
+]
